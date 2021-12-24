@@ -1,6 +1,7 @@
-
 https://fc18.ifca.ai/bitcoin/papers/bitcoin18-final17.pdf
 https://pdaian.com/blog/anti-asic-forks-considered-harmful/
+
+THIS PAPER IS CURRENTLY UNFINISHED
 
 # Quantification of security for PoW and PoS Cosensus Protocols
 
@@ -15,28 +16,55 @@ Because I will be talking about both Proof of Work and Proof of Stake systems, t
 * Block-creator - An actor that creates blocks for the block chain. This is either a miner in a PoW system, a minter in a PoS system, or both in a hybrid system.
 * Block-creation-power - The relative ability of a block-creator to create blocks. For example, in PoW systems this is hash-power - how many hash attempt that block-creator can do per second. In PoS systems this is generally the size of stake. This will often be talked about in terms of percentage. A block-creator that has 20% of the block-creation-power will be able to create on average 20% of the total number of valid blocks created in a given timeframe.
 
-# Quantifying Security: The Minimum Cost of Attack
+# Quantifying Security
 
-The basic minimum cost to attack any consensus protocol is finding the minimum cost an attacker would have to expend, risk, or obtain in order to have a high likelihood of successfully executing an attack within a reasonable timeframe. While an attacker can't control a VPoS blockchain indefinitely without first gaining control of nearly 50% of the active stake, an attacker would likely not need quite that much active stake to have a reasonable probability of successfully attacking the system.
+To quantify the security of a blockchain consensus algorithm, I propose examining two major factors:
 
-There are many ways one might define a metric for security, but for the purposes of this analysis, I define "security" to mean:
+1. The likely minimum cost of attack, and 
+2. The damage done by such an attack.
 
-* The lower bound on how much money an attacker would have to obtain and use (but not necessary expend) in order to get at least 1 chance per year of one of the following:
-   * a censorship attack lasting at least 1 day, or
-   * a single double-spend attack requiring a hidden chain that ends up being longer after the protocol's recommended number of confirmations for finalization
+This methodology allows us to plot any given attack along these two dimensions in order to compare possible attacks on various different consensus algorithms, but can also be used to measure the cost effectiveness of each attack, by dividing the cost of the attack by the damage done by that attack. A consensus algorithm that allows the a more cost-effective attack than another isn't necessarily a less secure algorithm however, because the raw cost of attack has the potential to put the attack beyond feasibility for most or even any foreseeable attacker. As always, security is dependent on what you're trying to secure against, and nothing is 100% secure.
 
-In this analysis, I will be talking about security in terms of a percentage of the total coins. So for example, a security of 20% means that a prospective attacker would need to own wealth with a value equal to at least 20% of the cryptocurrency's coins. In Proof of Work systems, security is directly related to how much money miners spend on mining (assuming all miners have approximately equivalent efficiencies). In Proof of Stake systems, security is directly related to the percentage of the currency that users are using to actively mint blocks.
+For the purposes of this analysis, I'll define the *cost of an attack* on a consensus protocol as the minimum cost an attacker would have to expend, risk, or obtain in order to have a high likelihood of successfully executing an attack within a reasonable timeframe. The timeframe is important because an attack often cannot be sustained indefinitely. For example, an attacker with exactly 50% of the block-creation-power would not be able to control the blockchain indefinitely, however such an attacker still might have a reasonable probability of successfully attacking the system in a given short window of time.
 
-Proof of Work systems have no upper bound on the theoretical security they can provide - so security numbers like 400% are possible, however in reality this would not be practical because more money would need to be spent on mining than the currency is worth. So Proof of Work does have practical limits to security, as we will see. The security of Proof of Stake coins maxes out at 50% - it is impossible for a Proof of Stake currency to have an attack-requirement of more than half the currency's coins, so 50% can be considered the holy grail of consensus protocol security.
+Since a blockchain consensus algorithm's purpose is almost entirely to prevent censorship attacks and double-spends, the costs and damage-potential of those attacks should define the security of a consensus protocol. In all the systems I have analyzed, both a censorship attack and double-spend require controlling the creation of all the blocks in the chain for a period of time (generally around an hour), and so have the same cost to perform. In fact, both can be done simultaneously. 
 
-This 50% number is closely related to the concept of a "51% attack" - basically if 50% of a cryptocurency's block-creation power is controlled by an attacker, the attacker can control the entire chain. This is a fundamental fact about decentralized currencies. [As Charlie Lee said](https://twitter.com/SatoshiLite/status/1082491687169998848): "If a crypto can't be 51% attacked, it is permissioned and centralized."
+#### The Damage
 
-In all the systems I have analyzed, both a censorship attack and double-spend require controlling all the blocks in the chain, and so have the same cost to perform. Therefore we can simplify this by only looking at the double-spend attack case (since that has the smaller requirement: a few blocks of chain control vs a day). A canonical description of the cheapest kind of attack is as follows:
+The largest amount of damage that could be done is via double-spends. Even a single double-spend could represent theft of a practically unbounded amount, since cryptocurrency transactions can generally spend very large amounts. The most effective double-spend attack would likely be one that purchases digital goods that can be delivered very quickly, such as other cryptocurrencies. Each double-spend could be on a deposit to an exchange that is used to buy another cryptocurrency and then withdrawn before the double-spend is executed. This could easily be a deposit of over $1 million worth of coins. Therefore a successful double spend attack with thousands of transactions could steal $1 billion or more worth of cryptocurrency. 
+
+Secondarily, this would also disrupt thousands of transactions, which would cause minor to medium inconvenience for most harmed parties. You could maybe estimate that the cost of this would be maybe $10 of people's time per person, so perhaps in the tens of thousands of dollars of damage in total - nothing anywhere near the damage done by the double-spends.
+
+Thirdly, transactions could be censored, which would be even more of a minor inconvenience unless the censorship lasts a long time (days or weeks). However, a successful 51% attack might even be likely to last weeks, since it would take some time to recover and find a workaround. If it does last a week, a ballpark estimate of the damage done could maybe be estimated at $100 per day per censored transaction, so maybe a soft upper bound on the order of $100 million of damage. 
+
+Lastly, the fees for transactions would likely rise substantially. It might even kick off a frenzy of transactions of people trying to safeguard their savings. Fees could rise to 10 times their previous value or more. This could easily cost people $100 per transaction (similar to the damage done by censorship). However it is mutually exclusive with censorship (if your transaction is censored, you're not paying a transaction fee). So this doesn't really increase the damage when considered with censorship. 
+
+To summarize, the damage done by a very short double-spend attack could count in the billions of dollars worth of damage. Extending the attack might add $100 million of damage per week, but if double spends continued in that time, it would cause much more damage, potentially destroying the coin entirely. 
+
+Because of this, I will assume that the potential damage done by a minimal-cost attack is large enough to be worth protecting against. 
+
+#### The Cost (Defining "Security")
+
+Following the above logic, for the purposes of this analysis, I define the "base security" of a particular consensus protocol to mean:
+
+* The lower bound on how much money an attacker would have to obtain and use (but not necessary expend) in order to get at least 1 chance per year to execute a single double-spend attack with a transaction that has followed the protocol's recommended number of confirmations for finalization.
+
+I'll also define the "economic security" of a consensus protocol to mean:
+
+* The lower bound on the net amount of money an attacker would have to expend to breach the "base security". 
+
+In this analysis, I will be talking about security in terms of a percentage of the total coins. So for example, a base security of 20% means that a prospective attacker would need to own wealth with a value equal to at least 20% of the cryptocurrency's coins to execute a successful attack. This lets us normalize the metric so that the consensus protocols can be compared regardless of the market price of the coin. 
+
+In Proof of Work systems, security is directly related to how much money miners spend on mining (assuming all miners have approximately equivalent efficiencies). In Proof of Stake systems, security is directly related to the percentage of the currency that users are using to actively mint blocks.
+
+Proof of Work systems have no upper bound on the theoretical security they can provide - so base security numbers like 400% are possible, however in reality this would not be practical because more money would need to be spent on mining than the currency is worth. So Proof of Work does have practical limits to security, as I will talk about. The base security of a Proof of Stake coin maxes out at 50% - it is impossible for a Proof of Stake currency to have an attack-requirement of more than half the currency's coins, so 50% can be considered the holy grail of consensus protocol security. This 50% number is closely related to the concept of a "51% attack" - basically if 50% of a cryptocurency's block-creation power is controlled by an attacker, the attacker can control the entire chain. This is a fundamental fact about decentralized currencies. [As Charlie Lee said](https://twitter.com/SatoshiLite/status/1082491687169998848): "*If a crypto can't be 51% attacked, it is permissioned and centralized.*"
+
+A canonical description of the cheapest kind of attack is as follows:
 
 1. The attacker would gain a high percentage of block-creation power (hash power for PoW, or stake for PoS).
 2. The attacker would make a large number of purchases totaling a large value.
-3. The attacker starts mining/minting on the block at the height immediately below the block their payments were confirmed in.
-4. As soon as the attacker irrevocably receives the products they purchased (which might happen within seconds for digital assets), the attacker releases their longer chain, causing their payments to be reversed.
+3. The attacker would start mining/minting on the block at the height immediately before the block their payments were confirmed in.
+4. As soon as the attacker irrevocably receives the products they purchased (which might happen within minutes for digital assets), the attacker releases their longer chain, causing their payments to be reversed.
 
 This process might be more involved in some currencies, but the general plan is similar: make purchases, then revert the payments by releasing a longer blockchain that doesn't have those payments. The difficulty/cost of doing this depends on how difficult/costly it is to create a longer blockchain than the honest block creators.
 
@@ -45,10 +73,6 @@ This process might be more involved in some currencies, but the general plan is 
 ## General Security Risks
 
 This section talks about attack vectors that are applicable to both PoW and PoS systems.
-
-### Buy-out Attack
-
-### Bribe Attack
 
 ### The Selfish "Economic" Attack
 
@@ -62,7 +86,7 @@ C. As soon as the public chain reaches the same length as the attacker's chain, 
 
 Eyal and Sirer's paper [Majority is not Enough](https://arxiv.org/abs/1311.0243) talks about how Proof of Work is susceptible to this attack no matter how much hashpower the attacker has if the attacker uses a network of nodes that pretend to be mining but actually are used to propagate the selfish-miner's blocks faster than the rest of the network. Eyal and Sirer suggest a partial-fix that when a miner has two potential chains of equal length to mine on top of, they randomly choose the chain to mine on top of. The paper says this makes it so the attacker requires 25% hashpower and goes on to say that theoretically there is no fix that could make this requirement larger than 33%. However, [it has been argued](https://www.yours.org/content/craig-wright-s--negative-gamma--and-the-curious-lack-of-intellectual-c-191f72455730) that the network topology of Bitcoin mining nodes is almost a [complete graph](https://en.wikipedia.org/wiki/Complete_graph) which prevents a network of fake mining nodes from being effective, and so therefore the threshold may actually be 33% rather than 25%.
 
-So the Economic Attack effectively makes suceptible consensus protocols 2/3 to 1/2 as secure as they would be otherwise.
+So the Economic Attack effectively makes susceptible consensus protocols 2/3 to 1/2 as secure as they would be otherwise.
 
 The key vulnerabilities that makes this attack possible is the advantage block-creators get from having early-access to the newest block and the ease of building a hidden chain. Consensus protocols where a lower advantage is obtained from having this early-access, or where a hidden chain is harder to build, would be less vulnerable to this problem.
 
@@ -70,11 +94,19 @@ It should be noted that this attack can't be done at all in any currency that ha
 
 ### Initial Coin Distribution
 
-Since only people who have coins can mint Proof of Stake blocks, those people would have an advantage in gaining new coins. The problem of fair distribution is somewhat of a contentious one. Some people think things like ICOs are perfectly fine and give the creators compensation for their efforts. Others think that only a world-wide race to create and own a currency is fair. Regardless what is fair, I believe a currency has a far better chance at succeeding if its distribution is as wide as possible among the people interested in obtaining the coin.
+Since only people who have coins can mint Proof of Stake blocks, those people would have an advantage in gaining new coins. Even for Proof of Work currencies, the distribution of the currency is seen as important by some in the community.
 
-One way of distributing a new coin is to use PoW mining for the majority or entirety of the distribution. However, this also has its flaws. Its not always possible to verify who is mining the coin, and thus its possible the group that created the coin are its primary miners. Another way is simply to have an open market for sale of the coin and whoever want to mint that currency's blocks can buy the coins at market price. This has its own problems, however, since markets for new coins can be easily manipulated. And just like PoW, this also doesn't allow verification that those creating blocks and getting the rewards are a sufficiently broad group.
+The problem of fair distribution is somewhat of a contentious one. Some people think things like ICOs are perfectly fine and give the creators compensation for their efforts. Others think that only a world-wide race to create and own a currency is fair. Regardless what is fair, I believe a currency has a far better chance at succeeding if its distribution is as wide as possible among the people interested in obtaining the coin.
 
-The crux of this security risk is that a currency that can't credibly say that its ownership or control is distributed widely is a currency more likely to be controlled by a single group and at some point attacked by that group.
+The crux of this security risk is that if a currency can't credibly say that its ownership or control is distributed widely, then that currency is more likely to be controlled by a single group and at some point attacked by that group.
+
+#### Mitigations
+
+One way of distributing a new coin is to use PoW mining for the majority or entirety of the distribution. However, this also has its flaws. Its not always possible to verify who is mining the coin, and thus its possible the group that created the coin are its primary miners.
+
+Another way is simply to have an open market for sale of the coin and whoever want to mint that currency's blocks can buy the coins at market price. This has its own problems, however, since markets for new coins can be easily manipulated. And just like PoW, this also doesn't allow verification that those creating blocks and getting the rewards are a sufficiently broad group.
+
+Another solution to this would be to distribute coins to people that are in some way verifiable. This could either be distribution to public entities with high levels of existing trust, or to distribute using some other system that is widely known/believed to have sufficiently distributed identies. For example if bitcoin's distribution is considered sufficient, distributing a new coin based on bitcoin ownership at a certain block would be an example of this.
 
 ### DoS risk
 
@@ -92,9 +124,29 @@ All consensus protocols I'm aware of are equally suceptible to the problem of ti
 
 This section talks about attack vectors that are applicable to Proof of Work systems, but not other consensus protocols.
 
-### Rental Attack
+### Theft of Machine Resources
 
-### Build Attack
+An attacker could steal the hardware or commandeer it for the duration of the attack. If they could steal enough hardware, an attack could be run basically for free (or whatever the cost of the theft is).
+
+Theft could be done today by mining pools (as of June 2020). A mining pool already runs their operation by directing other people's machines to mine a particular block. This could somewhat easily be used to execute an attack for a short period of time. If multiple mining pools were compromised such that the attacker could utilize them all in concert, this would likely be the most feasible way to attack bitcoin at the current time. The attack could last as long as they maintained > 50% of the mining power, which would be limited by pool miners being alerted to the attack and directing their mining power away from the compromised pools. How long that might be is unknown, but it seems like it would be unlikely to last longer than 1 week. Most likely less than a day. However, even an hour is long enough to execute numerous double-spends.
+
+The cost of an attack with stolen machine resources can be nearly free. However, it still doesn't make it easy or likely. And with the development of the [Stratum v2](https://medium.com/braiins/experts-discuss-stratum-v2-and-the-future-of-bitcoin-mining-d62568df73a6) mining protocol, this hole will be closed for good - mining pools will no longer be able to dictate what transactions will be mined and thus can't use their pool miners' resources in an attack.
+
+### Bribe/Rental Attack
+
+Rental is more difficult, because as far as I'm aware, there are no rental services for bitcoin mining hashpower. The fact that bitcoin mining is dominated by ASICs is a huge benefit here. Because the ASIC hardware is so specific to bitcoin, anyone who builds or buys the ASICs intends to mine themselves, and renting it out would almost certainly be a less efficient use.
+
+However, why stick to legal approaches? Botnets are something midway between theft and rental. You can [rent a botnet](https://securelist.com/the-cost-of-launching-a-ddos-attack/77784/#:~:text=This means the actual cost,every hour of an attack.) on the darkweb for $7/hr per 1000 machines. [Graphics cards](https://cointelegraph.com/news/top-graphics-cards-that-will-turn-a-crypto-mining-profit) can do on the order of 10 Million hashes/second, and CPUs can do perhaps 1/3 of that. So assuming each of those machines have a graphics card and cpu that can be utilized, this might mean that each machine could have a hashrate of 13 MH/s. So to gain the [100 million TH/s](https://www.blockchain.com/charts/hash-rate) needed, you'd have to rent a botnet with 40 trillion machines. Clearly an absurd number. It would also cost you $70 billion per hour. So this is kind of not an option, even if there were 40 trillion botnet accessible machines for rent out there at a low low price.
+
+However, this doesn't mean rental is off the table forever. FPGA rental is a thing these days, and if capacity of that ramps enough, that would be a viable way to rent mining power. FPGAs are perhaps 1/10th as cost effective as ASICs, but given that a 51% attack requires so little time, this hit might be well worth it. An FPGA rental attack could cost as little as [$80 million](https://github.com/fresheneesz/quantificationOfConsensusProtocolSecurity#asic-friendly-pow). Of course, today there's nowhere near enough rental FPGA power to pull this off.
+
+Also, there may be ways to develop multi-purpose ASICs that can be used for a number of things, which might make them more cost effective to rent. If such an ASIC were 90% as cost-effective as a full bitcoin ASIC, an attack could be pulled off that would near the cost of a few mined blocks. Theoretically, an attack like this would cost .5/.9 = 55.5% of the reward for 6 blocks which would be 21.7 BTC (6.5 per block * 6 * .555 = 21.7) or about $220,000 and most of that money would be made back in block rewards so the net cost of the attack would only be about $20,000/hour. Of course, again, this is not currently possible since no such rental ASICs are available.
+
+In proof-of-stake protocols, there is a risk that old now-empty wallets could be sold to an attacker, who could then use those old addresses to mint a branched block chain starting from a block where those wallets were not empty. See the section on the [History Attack](#history-attack) for more information about that.
+
+### Purchasing/Building Machine Resources
+
+An attack with purchased hardware would be quite a bit more expensive. Last time I ran the numbers, it would take [about 200,000 btc](https://github.com/fresheneesz/quantificationOfConsensusProtocolSecurity#asic-friendly-pow) to buy 50% of the hashpower. However, an attack like this could be quite a bit more patient and could take advantage of mining economics to push other miners out of the market before executing their attack. I've called this the [Economic Mining Monopoly Attack](https://github.com/fresheneesz/quantificationOfConsensusProtocolSecurity#economic-mining-monopoly-attack), and it basically can cut the cost of an attack in half. So instead of 200,000 BTC, it would cost 100,000. Still quite a lot of money, and that doesn't even include the electricity cost.
 
 ### Economic Mining Monopoly Attack
 
@@ -130,33 +182,51 @@ This section talks about attack vectors that are applicable to Proof of Work sys
 
 Nothing at stake is a risk for Proof of Stake systems that allow stakers to mint blocks on any chain without any downside. The idea is that if stakers have nothing to lose by minting on a chain that isn't the longest chain, they will mint on as many chains as they can. This could lead to the number of competing chains constantly increases, no blockchain is clearly the longest, and consensus is never reached. This is the expected scenario for a system with a majority of profit-seeking minters, however even sub-majority profit-seeking minters could cause the safe finalization time for transactions to be much longer than on chains without this problem.
 
+#### Mitigations
+
+The mitigation for this issue is to ensure there is in fact something at stake. The usual mitigation is to punish minters who mint on multiple chains, or mint on a chain other than the longest chain. Often this is done by confiscating some of the coins that have been "staked" one one chain when it can be shown that those coins have been used to mint a block on another chain. As long as chains don't have equal likelihood of becoming the main chain, minters have an incentive to mint only on that main chain. 
+
 ### Stake-grinding
 
-Stake-grinding is a potential problem in PoS systems where the minter is allowed to significantly affect the likelihood that an address will be given the right to mint on top of a future block. Because of the *minter secrets* that aren't revealed until after the outcome could be affected, VPoS doesn't have this problem unless the attacker controls the entire chain (see also *progression capture*).
+Stake-grinding is a potential problem in PoS systems where the minter is allowed to significantly affect the likelihood that an address will be given the right to mint on top of a future block. 
+
+#### Mitigations
+
+The possibility of stake grinding can be prevented by ensuring that minters either can't control any factor that determines who can mint future blocks or that those minters can't test to see who can mint future blocks before committing to whatever relevant factor they do control.
 
 ### Prediction Attack
 
-A prediction attack would be executed by predicting what minter addresses will come up for some blocks in the future, generating addresses that come up very early in the minter progression, then moving their funds into those addresses so they can mint a higher proportion of blocks than their coin ownership would normally allow. However, because minters generate hidden randomness that determines the minter progression, as long as the randomness generated by minters can be considered a random oracle, accurately predicting the minter progression should be practically impossible. In fact, each minter has an incentive to generate true randomness and keep that randomness secret according to the protocol, since if minter X released their secret, a different minter Y might be able to predict the progression for some future block that minter X would otherwise have won. Also, as long as any two pieces of the randomness (out of potentially hundreds of pieces) is kept secret by two separate actors, no one would be able to practically predict the minter progression.
+A prediction attack would be executed by predicting what minter addresses will come up for some blocks in the future, generating addresses that come up very early in the minter progression, then moving their funds into those addresses so they can mint a higher proportion of blocks than their coin ownership would normally allow. 
+
+#### Mitigations
+
+This attack can be prevented by determining who can mint future blocks using some form of randomness that an attacker has less than complete knowledge of.
 
 ### History Attack
 
-In a "history attack", someone acquires a large number of tokens, sells them, and then creates a fork from just before the time when their tokens were sold or traded. If the attack fails, the attempt costs nothing because the tokens have already been sold or traded; if the attack succeeds, the attacker gets their tokens back (a successful double-spend). Extreme forms of this attack involve obtaining the private keys from old accounts and using them to build a successful chain right from the genesis block.
+In a "history attack", someone acquires a large number of coins, sells them, and then creates a fork from just before the time when their coins were sold. The attacker could also purchase keys for addresses (presumably at very cheap rates) that used to have coins and use those to create a fork from before those coins were moved.
+
+If the attack fails, the attempt costs nothing (or very little in the case of purchasing used keys) because the coins have already been sold; if the attack succeeds, the attacker gets their coins back (a successful double-spend). Extreme forms of this attack involve obtaining the private keys from old accounts and using them to build a successful chain right from the genesis block.
 
 While this attack can be prevented for any user connected to any honest node, it can make an Eclipse Attack more credible at a lower cost to the attacker. This is because an eclipsed user could not obtain information that can show the chain is fake.
 
 #### Mitigations
 
-This attack can be prevented by obtaining proof of invalidity of the coins being used to mint a block from honest connections. Invaildity can be proven by showing the attacker's transactions in the honest chain and what height they happened at, even in the case that the honest chain is shorter.
+There are a couple cases: 
 
-A node can know the coins cannot be minted with connection only needs to provide a block on another chain (it needs not be the longest chain) that contains a transaction using up the coins being used to mint at or before a blockheight its attempting to mint a block at.
+A. In cases where the coins are used to mint blocks at a greater height than when those coins were spent (in any chain), this attack could be prevented by having nodes disallow coins that have been moved in any branch of the blockchain from being used to mint coins in any other branch. A node could obtain this proof as long as it is connected to at least one honest node. 
+
+B. In cases where the coins are  used to mint blocks at a heigh less than when those coins were spent, its possible that purchased addresses could be used to capture the progression (see Progression Capture).
+
+
 
 ### History Replay Attack
 
-An extsion of the History Attack is something I call the "history replay attack". The attacker swaps coins with other people, such that they obtain transactions sent to their account using outputs that were unspent before the block they want to branch from. They can then branch from the chain just before they made any of those transactions and create blocks containing the return transactions only, thus multiplying those coins by the number of times they were swapped. Theoretically, this could allow an attacker to be able to create a chain where they own all the coins.
+An extension of the History Attack is something I call the "history replay attack". The attacker swaps coins with other people, such that they obtain transactions sent to their account using outputs that were unspent before the block they want to branch from. They can then branch from the chain just before they made any of those transactions and create blocks containing the return transactions only, thus multiplying those coins by the number of times they were swapped. Theoretically, this could allow an attacker to be able to create a chain where they own all the coins.
 
-Futhermore, the historical transactions used need not have been published on-chain. Transactions used by a second layer protocol can be used as well. For example, the breach remedy transactions used for lightning network channels could be taken and used on a different chain.
+Furthermore, the historical transactions used need not have been published on-chain. Transactions used by a second layer protocol can be used as well. For example, the breach remedy transactions used for lightning network channels could be taken and used on a different chain.
 
-There are mitigations for this explained below, but even with those mitigations this attack can be used to make an eclipsed node more likely to belive that the attacker's chain is the main chain. Because an eclipsed node wouldn't have access to other chains, it wouldn't be able to see the longer main chain to detect the attack. So the History Replay Attack could help trick a victim into accepting a forked chain as the main chain, depending on how much of a drop in minting-rate the victim will accept. For a node that will only accept a 30% drop in minting-rate, the attacker would need to gain enough transctions to multiply their coins up to 70% of the honestly minting coins in order to trick an eclipsed node (if it also ceased minting on the main chain). This is likely to be incredibly difficult to do, but the difficulty depends on what percentage of coins are made available for the necessary swaps (eg coin join or lightning network channels).
+There are mitigations for this explained below, but even with those mitigations this attack can be used to make an eclipsed node more likely to believe that the attacker's chain is the main chain. Because an eclipsed node wouldn't have access to other chains, it wouldn't be able to see the longer main chain to detect the attack. So the History Replay Attack could help trick a victim into accepting a forked chain as the main chain, depending on how much of a drop in minting-rate the victim will accept. For a node that will only accept a 30% drop in minting-rate, the attacker would need to gain enough transactions to multiply their coins up to 70% of the honestly minting coins in order to trick an eclipsed node (if it also ceased minting on the main chain). This is likely to be incredibly difficult to do, but the difficulty depends on what percentage of coins are made available for the necessary swaps (eg coin join or lightning network channels).
 
 #### Mitigations
 
@@ -170,13 +240,13 @@ A isn't sufficient on its own because if the transaction can be spent at any hei
 
 As an example, the protocol might treats a transaction as valid only if it contains the hash of a block minted at most 30 blocks before the block containing the hash. It would then also require that a UTXO can't mint a block until at least that timeout period (eg 30 blocks in the previous example). This would allow nodes to compare two chains and determine which is the imposter chain by seeing the transactions sending those coins (to the next swap target) in the main chain. This mitigation can also prevent the normal History Attack.
 
-To mitigate the variant of this that uses off-chain transactions, the nodes that hold those off-chain transactions would need to show proof that the transctions used on the attacker's chain are out-of-date. For example, for a lightning channel where an out-of-date breach remedy transction was used on the attacker's chain to mint, the honest channel partner could prove which chain is the attacker's chain. However, that channel partner only has nothing to lose if sending the proof doesn't compromise their channel. If it does compromise their channel, they may simply opt to let someone else have the burden of proving which chain is the attacker's. So for any proof of stake coin that has second-layer features where non-compromising proofs can't be presented, this presents security risk proportional to how much traffic uses those kind of second-layer features.
+To mitigate the variant of this that uses off-chain transactions, the nodes that hold those off-chain transactions would need to show proof that the transactions used on the attacker's chain are out-of-date. For example, for a lightning channel where an out-of-date breach remedy transaction was used on the attacker's chain to mint, the honest channel partner could prove which chain is the attacker's chain. However, that channel partner only has nothing to lose if sending the proof doesn't compromise their channel. If it does compromise their channel, they may simply opt to let someone else have the burden of proving which chain is the attacker's. So for any proof of stake coin that has second-layer features where non-compromising proofs can't be presented, this presents security risk proportional to how much traffic uses those kind of second-layer features.
 
 The downside of these mitigations is that transactions, once created, can only be minted into a narrow band of blocks. One consequence is that the types of long-lived transaction contracts used in the Lightning Network would be impossible in such a system, because you need to be able to sign a channel state and then let that signed transaction sit off-chain for an undetermined amount of time until its needed for settling. However, short-lived transaction contracts can be renewed on a repeated regular basis in order to keep something like a Lightning channel open indefinitely.
 
 ### Progression capture
 
-Similar to quorum capture in quorum-based protocols (like Casper), this attack uses elements of prediction, stake-grinding, and the history attack. An attacker would acquire enough coin to be able to mint enough blocks in a row that they're able to control all the minter secrets. Once the attacker does this, they then permanently control the chain as long as they continue to censor all other minters. Not only can they control the chain, but they can sell off the vast majority of their stake while using stake grinding to figure out what minter secrets to put into blocks in order to keep control of the system. With no lower bound on how much work or time it takes to stake-grind, the amount of stake an attacker needs to keep in order to keep control over the blockchain can theoretically be arbitrarily close to 0 (as long as its actually above 0).
+Similar to quorum capture in quorum-based protocols (like Casper), this attack uses elements of prediction, stake-grinding, and the history attack. An attacker would acquire enough coin to be able to mint enough blocks in a contiguous sequence that they're able to control all the minter secrets. Once the attacker does this, they then permanently control the chain as long as they continue to censor all other minters. Not only can they control the chain, but they can sell off the vast majority of their stake while using stake grinding to figure out what minter secrets to put into blocks in order to keep control of the system. With no lower bound on how much work or time it takes to stake-grind, the amount of stake an attacker needs to keep in order to keep control over the blockchain can theoretically be arbitrarily close to 0 (as long as its actually above 0).
 
 There are two caveats to this attack:
 
@@ -191,7 +261,7 @@ If an attacker can bribe a significant fraction of minters to sign their blocks 
 
 ### Profit-seeking Minter Collusion
 
-Since minters will generally prefer blocks minted with earlier timestamps, if a minter comes late to the game and mints a block with an earlier timestamp for an old blockheight, other profit-seeking minters might decide to mint on top of that block as well, even at the risk of being subject to minter punishment. If enough minters do this, they could build a longer chain and disrupt the network with a short-range or medium-range revision. If they succeed, they're not punished, but honest minters could be punished. This behavior is at its highest risk of happening if a minter finds a block 1 second after the previous block's timestamp, since it would be impossible for a block to be minted earlier than that (unless it was on top of an earlier block). However, a minter would only rationally do this if they weren't actively minting at the time that old block was minted, since otherwise they could have won the block in a non-contentious way earlier with no major risk of minter punishment. It seems unlikely that this would happen, since not only would this create a huge disruption in the network causing the currency (and therefore their stake) to lose value, but also because another minter could do the same thing to them by mining a block with an earlier timestamp either on the block they mined, or on a previous block.
+Since minters will generally prefer blocks minted with earlier timestamps, if a minter comes late to the game and mints a block with an earlier timestamp for an old block-height, other profit-seeking minters might decide to mint on top of that block as well, even at the risk of being subject to minter punishment. If enough minters do this, they could build a longer chain and disrupt the network with a short-range or medium-range revision. If they succeed, they're not punished, but honest minters could be punished. This behavior is at its highest risk of happening if a minter finds a block 1 second after the previous block's timestamp, since it would be impossible for a block to be minted earlier than that (unless it was on top of an earlier block). However, a minter would only rationally do this if they weren't actively minting at the time that old block was minted, since otherwise they could have won the block in a non-contentious way earlier with no major risk of minter punishment. It seems unlikely that this would happen, since not only would this create a huge disruption in the network causing the currency (and therefore their stake) to lose value, but also because another minter could do the same thing to them by mining a block with an earlier timestamp either on the block they mined, or on a previous block.
 
 ### Long-term Ownership Centralization
 
@@ -207,7 +277,7 @@ Many PoS systems have requirements to participating in securing the system, incl
 * voting on the blockchain (DPoS), or
 * waiting period after moving coins (Nxt)
 
-Each of these has their purpose in their respective protocols, but each also puts up a barrier to participating in securing the network. These barriers have important implications because the security of PoS systems directly depends on what proportion of the coins are being used to secure the network.
+Each of these has their purpose in their respective protocols, but each also puts up a barrier to participating in securing the network. These barriers have important implications because the base security of PoS systems directly depends on what proportion of the coins are being used to secure the network.
 
 In Casper, since you must lock up your coins into stake (like tickets in Decred), its very unlikely that anywhere near a majority of coins will participate in securing the network by being locked up in stake. In fact, the currency wouldn't even be able to function if 100% of the currency's owners tried to participate. Requiring normal (non minting) users to vote on the blockchain is also a significant barrier for DPoS, because users have to pay for on-chain space. Even something as minor as a waiting period between when you use your coins and when you can use them to mint puts up a small barrier that will reduce how many people participate.
 
@@ -216,7 +286,7 @@ The only barriers VPoS has are:
 * the requirement that the address being used to mint has enough coin to cover the minter punishment amount, and
 * the requirement that the coins being used to mint existed `minterSecretLifetime` number of blocks ago.
 
-Other than that, any coins can be used at any time to mint without exception. This can substantially increase VPoS's security in comparison to systems that have bigger barriers to minting.
+Other than that, any coins can be used at any time to mint without exception. This can substantially increase VPoS's base security in comparison to systems that have bigger barriers to minting.
 
 ### Latency-based Block-creation Centralization
 
@@ -234,17 +304,17 @@ In any attack involving a hidden chain, most nodes in the system will become awa
 
 # Analysis of Various Consensus Algorithms
 
-Here's a table summarizing the level of security for each consensus protocol.
+Here's a table summarizing the level of base security for each consensus protocol.
 
 ![comparisonTable.png](comparisonTable.png)
 
-Note that in the above, the "security at 1-hour finalization" is in terms of a percentage of the total amount of coin.
+Note that in the above, the "base security at 1-hour finalization" is in terms of a percentage of the total amount of coin.
 
 ## Analysis of Pure Proof of Work
 
 Mining requirement: `hash(blockHeader) < maxHash/difficulty`
 
-Estimated Security: 1.2%
+Estimated Base Security: 1.2%
 
 To attack a Proof of Work coin like Bitcoin, the attacker needs 50% of the hashpower and perform a short-range longest-chain attack. Pure proof of work simply doesn’t have a risk of long-range attacks, since short-range attacks are always cheaper.
 
@@ -266,7 +336,7 @@ Taking Bitcoin's current rewards of about 13.5 btc per block, that means that mi
 
 Build attacks and Buy-out attacks both should have similar costs, since in order to buy hardware it must be built first. We can assume that a Buy-out attack is slightly cheaper than a Build attack.
 
-For bitcoin as of September 2019, Bitcoin miners churned at around [90 million TH/s](https://www.blockchain.com/en/charts/hash-rate) making the cost of building 50% of the hashrate (ie doubling the hashrate) for a Build attack was about 200,000 btc (if using 5.6 million Antminer S9s at [16 TH/s](https://shop.bitmain.com/product/detail?pid=00020190614153859071Q403WQ6D0608) costing [$350](https://shop.bitmain.com/product/detail?pid=00020190614153859071Q403WQ6D0608) a piece) or about 1.1% of the total supply. Thus that is the minimum capital requirement for attacking Bitcoin. However, the selfish-mining problem cuts PoW's security in half, bringing the security down to 0.65% of the total coins. Also, its very likely that the ratio of mining revenue per block to total coins will go down substantially in the coming years, which would in turn reduce the security, as a percentage of total coins, proportionally.
+For bitcoin as of September 2019, Bitcoin miners churned at around [90 million TH/s](https://www.blockchain.com/en/charts/hash-rate) making the cost of building 50% of the hashrate (ie doubling the hashrate) for a Build attack was about 200,000 btc (if using 5.6 million Antminer S9s at [16 TH/s](https://shop.bitmain.com/product/detail?pid=00020190614153859071Q403WQ6D0608) costing [$350](https://shop.bitmain.com/product/detail?pid=00020190614153859071Q403WQ6D0608) a piece) or about 1.1% of the total supply. Thus that is the minimum capital requirement for attacking Bitcoin. However, the selfish-mining problem cuts PoW's base security in half, bringing the base security down to 0.65% of the total coins. Also, its very likely that the ratio of mining revenue per block to total coins will go down substantially in the coming years, which would in turn reduce the base security, as a percentage of total coins, proportionally.
 
 A Bribery attack is the one that Joseph Bonneau pointed out may be the cheapest form of attack. 
 
@@ -286,11 +356,11 @@ This is in contrast to proof-of-work where an attacker's success would at most r
 
 Minting probability: *proportional to amount of staked coins*.
 
-Estimated Security: 4.2%
+Estimated Base Security: 4.2%
 
 [Casper](https://github.com/ethereum/research/blob/master/papers/casper-basics/casper_basics.pdf) (see also [the full protocol](https://github.com/ethereum/research/blob/master/papers/CasperTFG/CasperTFG.pdf) and [the rest of the papers](https://github.com/ethereum/research/tree/master/papers)) is a proof-of-stake protocol where a quorum of stakers (the "validator set") votes on which blocks (or "epochs" of blocks) to confirm. The quorum passes its power onto a new quorum each epoch using randomness created in a distributed manner by all the current quorum stakeholders. Casper also requires a separate mechanism to propose blocks to the quorum. Ethereum will do this using the usual Proof-of-Work, but the Casper paper claims it can be done using round robin proposals by stakers (perhaps the quorum stakers).
 
-Since stakers can't use their coins, it is impossible for everyone to participate in Casper minting. In Casper you need to take manual action to stake or unstake your coins. While this could theoretically be as easy as transferring money from a savings to a checking account (and then waiting weeks for the transition to happen), the extra complication there will definitely deter some people from participating or would at minimum prevent willing participants from participating with all their coins. In practice will likely mean that only a small fraction of people will bother to actively participate. Since the security of Casper is highly dependant on the fraction of coin owners that actively participate in minting, this barrier should be considered a significant downside to the protocol.
+Since stakers can't use their coins, it is impossible for everyone to participate in Casper minting. In Casper you need to take manual action to stake or unstake your coins. While this could theoretically be as easy as transferring money from a savings to a checking account (and then waiting weeks for the transition to happen), the extra complication there will definitely deter some people from participating or would at minimum prevent willing participants from participating with all their coins. In practice will likely mean that only a small fraction of people will bother to actively participate. Since the security of Casper is highly dependent on the fraction of coin owners that actively participate in minting, this barrier should be considered a significant downside to the protocol.
 
 
 
@@ -298,7 +368,7 @@ One primary attack that the Casper protocol goes to lengths to mitigate is long-
 
 
 
-The second primary attack Casper attempts to mitigate is a catastrophic crash where more than 1/3 of validators go offline. VPoS doesn’t have the problem of catastrophic crashes because it doesn’t use a quorum (aka a validator set), and instead a new satoshi will be given the right to mint a block each second, allowing more and more of the address space to mint a block, meaning that the longer it takes for a block to be mined, the more people will be able to mint a block. Casper's solution to this is to slowly drain funds from validtors that don't vote for checkpoints. This means that if more than 1/3rd of the validators suddenly become non-responsive, their funds will be slowly drained until the remaining validators make up more than 2/3rds of the validators set. This solution looks like it should work to solve the problem of catastrophic crashes.
+The second primary attack Casper attempts to mitigate is a catastrophic crash where more than 1/3 of validators go offline. VPoS doesn’t have the problem of catastrophic crashes because it doesn’t use a quorum (aka a validator set), and instead a new satoshi will be given the right to mint a block each second, allowing more and more of the address space to mint a block, meaning that the longer it takes for a block to be mined, the more people will be able to mint a block. Casper's solution to this is to slowly drain funds from validators that don't vote for checkpoints. This means that if more than 1/3rd of the validators suddenly become non-responsive, their funds will be slowly drained until the remaining validators make up more than 2/3rds of the validators set. This solution looks like it should work to solve the problem of catastrophic crashes.
 
 However, this opens up a potential attack vector where any validator could capture the validator set for themselves by pretending all other validators aren't voting, draining their funds, and then capturing the validator set all for themselves. This attack is [detailed here](https://www.reddit.com/r/ethereum/comments/8a4dc0/three_related_hypothetical_security_flaws_in/). All pure PoS protocols have the problem of semi-permanent system capture white at the same time being able to sell off the stake you used to capture the system, which for VPoS is detailed in the section on *progression capture*.
 
@@ -308,7 +378,7 @@ Also, Casper solves the nothing-at-stake problem by using pre-staked ether and c
 
 Casper requires this separate “proposal mechanism” and currently plans on using a PoW mechanism to do that. That proposal mechanism adds costs to Casper that aren’t discussed in the proposal, since they’re separate. VPoS is self-contained and doesn't need any external mechanism to operate properly.
 
-In summary, Casper has the minor (fixable) issue that long-range revisions can trick nodes that haven't caught up to the fork point, requires an external proposal method, and is unlikely to achieve more than 10% of the total coins being used as active stake since active stake can't be transferred. VPoS has none of these issues, and because for both systems an attacker must achieve nearly 50% of the *active* stake to successfully perform a double spend, and VPoS can realistically achieve nearly 100% of the total coins being used as active stake, VPoS should have approximately 10 times the security that Casper can achieve in terms of the percentage of the total coins that an attacker needs to successfully attack the system.
+In summary, Casper has the minor (fixable) issue that long-range revisions can trick nodes that haven't caught up to the fork point, requires an external proposal method, and is unlikely to achieve more than 10% of the total coins being used as active stake since active stake can't be transferred. VPoS has none of these issues, and because for both systems an attacker must achieve nearly 50% of the *active* stake to successfully perform a double spend, and VPoS can realistically achieve nearly 100% of the total coins being used as active stake, VPoS should have approximately 10 times the base security that Casper can achieve in terms of the percentage of the total coins that an attacker needs to successfully attack the system.
 
 ## Analysis of Pure Proof of Stake Protocols
 
@@ -319,7 +389,7 @@ https://github.com/libbitcoin/libbitcoin-system/wiki/Proof-of-Stake-Fallacy
 
 Many have called proof of stake pointless because any incentive provided to mint PoS blocks will tend toward using an equal amount of resources to the expected reward. See [this article](http://www.truthcoin.info/blog/pos-still-pointless/) for some exposition about that. I agree that it is indeed the case that minters will attempt to expend as much cost as they can in order to maximize their minting rewards. However, this argument has two critical flaws.
 
-The first flaw is that the amount a blockchain costs to support is different from the amount a blockchain costs to attack, and the ratio of blockchain incentives over cost of attack differs between consensus protocols. Consider Bitcoin: in an equilibrium state, an attacker of a pure proof-of-work system like Bitcoin will require purchasing 1/2 of the honest hashpower and running that hardware for the duration of the attack (which could be as little as 1 hour). On the other hand, the honest miners normally must run and maintain this hashpower at all times ad infinitum. So the cost of maintaining the system is far more than the cost of attacking the system. In VPoS, the attacker must gain nearly 50% of the actively minting coins which would be a far higher cost than obtaining half of Bitcoin's hashpower, and yet honest minters aren't expending any significant resources at all to maintain this security. What this means is that the incentive provided in a system using VPoS can be far lower for a given level of security than in a PoW system.
+The first flaw is that the amount a blockchain costs to support is different from the amount a blockchain costs to attack, and the ratio of blockchain incentives over cost of attack differs between consensus protocols. Consider Bitcoin: in an equilibrium state, an attacker of a pure proof-of-work system like Bitcoin will require purchasing 1/2 of the honest hashpower and running that hardware for the duration of the attack (which could be as little as 1 hour). On the other hand, the honest miners normally must run and maintain this hashpower at all times ad infinitum. So the cost of maintaining the system is far more than the cost of attacking the system. In VPoS, the attacker must gain nearly 50% of the actively minting coins which would be a far higher cost than obtaining half of Bitcoin's hashpower, and yet honest minters aren't expending any significant resources at all to maintain this base security. What this means is that the incentive provided in a system using VPoS can be far lower for a given level of base security than in a PoW system.
 
 The second flaw is that the cost of holding on to currency in order to mint PoS blocks (rather than investing it in some other way) is only a cost to the minter, not to the economy in total. Again, let's consider Bitcoin. When a miner uses electricity to run their mining hardware, the miner loses the electricity (its expended) but also on a global scale that electricity isn't available for anyone else - it is gone for everyone. However, this isn't true of currency. If some currency is removed from circulation by its owner (say for the purposes of minting), all other currency in circulation increases in value by exactly the amount removed from circulation (for the period of time that currency was out of circulation). In other words, while the minter who's using their currency to mint can't use it for other things and thus incurs an opportunity cost, the total value in the economy does not change at all. So a pure proof-of-stake system allows costs to be incurred by individuals while no net economic cost is actually incurred when considering the total economy. This essentially makes proof-of-stake free, even tho its minters do incur opportunity costs. This line of reasoning is actually closely tied to why a non-inflationary currency (ie a currency who's total quantity of coins doesn't change over time) won't actually be the doomsday scenario some have feared.
 
@@ -337,7 +407,7 @@ The way some DPoS systems (eg Bitshares) choose the number of delegates and the 
 
 In some DPoS coins (eg BitShares), certain network parameters (eg block size, fees, etc) can be changed by special delegates. However, this means that if an attacker manages to achieve 50% of the delegates, they can change parameters of the consensus protocol, potentially tightening their stranglehold on the blockchain.
 
-In summary, because the security of DPoS depends heavily on the active participation in voting for delegates by coin owners and because active voting is a manual process (making it expensive), the percentage of the coin owned by active voters is likely to be much less than active minters in VPoS. This in turn means DPoS is likely to be substantially less secure than VPoS - likely 10 or 20 times less secure.
+In summary, because the base security of DPoS depends heavily on the active participation in voting for delegates by coin owners and because active voting is a manual process (making it expensive), the percentage of the coin owned by active voters is likely to be much less than active minters in VPoS. This in turn means DPoS is likely to be substantially less secure than VPoS - likely 10 or 20 times less secure.
 
 ### Analysis of PeerCoin
 
@@ -349,10 +419,10 @@ Mining requirement: `hash(prevBlockTimestamp, unspentOutput) < balance(unspentOu
 
 The protocol has many problems:
 
-* The use of coin age also substantially decreases the security of the system, since an attacker with much less than 50% of the coin ownership could dominate the chain long enough to double spend by simply waiting for their coins to age enough to make that possible. 
+* The use of coin age also substantially decreases the base security of the system, since an attacker with much less than 50% of the coin ownership could dominate the chain long enough to double spend by simply waiting for their coins to age enough to make that possible. 
 * The problem of long-range-revisions is addressed by suggesting checkpoints. However the white paper suggests using centrally broadcast checkpoints "*a few times daily*" and considered this less than ideal but "acceptable". Apparently, this has been changed to something like every 2 weeks. However in my opinion, having automatic centrally broadcast checkpoints of any kind is in no way acceptable for a distributed protocol. It introduces a critical central point of failure that can completely and entirely compromise the system. An automatic checkpoint update is not secure, which is why VPoS suggests hardcoded and auditable checkpoints that only change when a user decides to manually update their software.
 * The nothing-at-stake problem is also addressed by these checkpoints. However the author of PeerCoin didn't believe the nothing-at-stake problem would happen for some reason. While this may be true for altrustic minters, for profit-seeking minters, this is not true. Neither does periodic checkpointing solve the problem. Other [arguments from proponents of PeerCoin](http://wiki.peercointalk.org/index.php?title=Myths#Nothing-at-stake) include:
-  * The idea that there is something at stake because minting on chains that aren't the longest is bad for the network and therefore risks the value of the coin in total. While true, this simply doesn't hold up to the tragedy of the commons. Because any individual minting on multiple chains (or not) doesn't have a significant affect, individuals will tend to do it even tho the negative affect of everyoen doing it is substantial.
+  * The idea that there is something at stake because minting on chains that aren't the longest is bad for the network and therefore risks the value of the coin in total. While true, this simply doesn't hold up to the tragedy of the commons. Because any individual minting on multiple chains (or not) doesn't have a significant affect, individuals will tend to do it even tho the negative affect of everyone doing it is substantial.
   * The idea that conflicting blocks aren't propagated. This helps this particular problem to a degree, but does nothing to help newly entrant nodes and opens up other attack vectors (for example sybil attacks that lock nodes into an attacker's chain).
   * The top block is reverted if conflicting blocks minted using the same output are found. Even without considering the flaws of this in cases where it's applicable, the fact is that this would almost never be applicable since an attacker would have their stake split up in to many many outputs and would almost never need or want to use the same output in close succession.
 * They acknowledge that minters might not want to cooperate with each other and not propagate other minters' blocks. However, they misinterpret Babaioff et al that fees are the cause, whereas Babaioff's work concludes that competition for miner rewards is the cause. So in their misinterpretation, they decide to burn fees and yet keep coinbase rewards. However, this doesn't solve the problem. In fact it likely has very little effect at all, since to maintain the same incentives, additional inflation must be introduced that would on average be the same as if the fees were given to minters rather than being burned.
@@ -363,7 +433,7 @@ See https://talk.peercoin.net/t/looking-for-a-review-of-the-comparison-between-p
 
 If PeerCoin didn't have its PoW component, it would be susceptible to prediction attacks, since the only randomness involved in deciding who mints each block is the randomness of who is actively minting at a given time and what transaction output they use to mint. Because prediction attacks involve moving coins and this destroys the coin-age necessary to mint, this makes prediction attacks substantially more difficult than they would otherwise be, but the risk would still be there for an attacker to mint more blocks than their fair share. However, its unlikely a prediction attack could be used to help double-spend, since the length of the chain depends on destroyed coin-age and not just the current difficulty.
 
-So going back to our definition of security: how much stake would an attacker require to have an opportunity to double-spend on PeerCoin once per year on average? An ideal attack on PeerCoin might look like the following:
+So going back to our definition of base security: how much stake would an attacker require to have an opportunity to double-spend on PeerCoin once per year on average? An ideal attack on PeerCoin might look like the following:
 
 1. The attacker obtains a certain amount of coins and continuously tests for opportunities to double spend. The longer this process takes, the more coin age the attacker builds up
 2. When an opportunity is found, the attacker then spends some or all of their coins on the main chain
@@ -371,7 +441,7 @@ So going back to our definition of security: how much stake would an attacker re
 
 At a 10-minute blocktime target and 6 confirmation finalization (for ~1 hour finalization time) and an average minter coin-age of 2/3rds of a year (which empirically seems to currently be the case), this would allow someone with only 9% of the actively minting coins to execute a double-spend once per year. So with 50% to 100% minter participation, the cost of an attack is 4.5% to 9% of the total coins. See [costOfAttackingAlts.js](costOfAttackingAlts.js) for the math. If the nothing-at-stake problem ends up meaning many profit-seeking nodes will mint on top of an attacker's chain or possibly give the attacker chains to gain a head start from, the security is even worse.
 
-Peercoin's white paper is particularly sparse, and certainly doesn't define a complete protocol. As far as I know, they have never released a proper spec of their protocol. Because of this, its possible my understanding of the protocol doesn't quite match what they've implemented. The authors of the PeerCoin white paper don't seem to have spent much time considering the attacks and degradations their system allows for. The security of PeerCoin is one of the worst in comparison to protocols like Casper, DPoS, or VPoS, but even so likely requires more resources to attack than PoW.
+Peercoin's white paper is particularly sparse, and certainly doesn't define a complete protocol. As far as I know, they have never released a proper spec of their protocol. Because of this, its possible my understanding of the protocol doesn't quite match what they've implemented. The authors of the PeerCoin white paper don't seem to have spent much time considering the attacks and degradations their system allows for. The base security of PeerCoin is one of the worst in comparison to protocols like Casper, DPoS, or VPoS, but even so likely requires more resources to attack than PoW.
 
 ### Analysis of NXT
 
@@ -380,13 +450,13 @@ Mining requirement: `generationSignature(0) < t * balance(account) * maxHash/dif
 * where `generationSignature(height)` is `sign(publicKey(account), generationSignature(height-1))`
 *(Note that the Bitfury paper also misleadingly included a hash of the previous block inside the hash on the left side.*)
 
-[NXT coin](https://bravenewcoin.com/assets/Whitepapers/NxtWhitepaper-v122-rev4.pdf) is a pure PoS protocol works on similar prinicples to PeerCoin except that it doesn't use coin age but rather just uses the address balance. So while NXT avoids the couple critical issues related to coin age, it runs into many of the same security issues. It also doesn't solve the nothing-at-stake problem. Nxt points out the history attack, but its proposed solution does not in fact solve the problem. They claim that since stake must be stationary for 1440 blocks, the attacker can't use that moved stake to "forge" (ie mint) blocks, however the attacker's stake won't have moved in the attacker's chain which doesn't contain those transactions. Also, its suggestion that a reorganization limit of 720 blocks solve long-range revision attacks isn't totally the case. Any new node downloading the blockchain(s) from scratch could be fooled regardless of that rule.
+[NXT coin](https://bravenewcoin.com/assets/Whitepapers/NxtWhitepaper-v122-rev4.pdf) is a pure PoS protocol works on similar principles to PeerCoin except that it doesn't use coin age but rather just uses the address balance. So while NXT avoids the couple critical issues related to coin age, it runs into many of the same security issues. It also doesn't solve the nothing-at-stake problem. Nxt points out the history attack, but its proposed solution does not in fact solve the problem. They claim that since stake must be stationary for 1440 blocks, the attacker can't use that moved stake to "forge" (ie mint) blocks, however the attacker's stake won't have moved in the attacker's chain which doesn't contain those transactions. Also, its suggestion that a reorganization limit of 720 blocks solve long-range revision attacks isn't totally the case. Any new node downloading the blockchain(s) from scratch could be fooled regardless of that rule.
 
 It should be noted that the nothing-at-stake problem is not an attack. A single actor can't perform a nothing-at-stake attack (there is no such thing), tho many in the Nxt community [seem to think](https://www.reddit.com/r/NXT/comments/29yzuw/how_does_nxt_solve_the_nothing_at_stake_issue/) it is, for some reason. The nothing-at-stake problem is the property of a system where profit-seeking actors will rationally mint on pretty much anything they can. Nxt does have this problem, and given enough time, one should expect more and more actors in that system to exhibit this behavior as a higher percentage of Nxt users become profit-seeking rather than altruistic (since early adopters for these things are far more likely to be altruistic than late comers). An environment with substantial actors displaying this behavior makes finalization take far longer and/or makes it far easier for an attacker to double-spend.
 
 Bitfury [pointed out](http://bitfury.com/content/5-white-papers-research/pos-vs-pow-1.0.2.pdf) that minting rewards in Nxt aren't strictly fair - minters with more stake will receive a higher proportion of the minting rewards than the proportion of stake they have. So in Nxt, the rich do get richer (while in PoS systems with fair distributions, this isn't usually the case).
 
-In a minimal cost attack on Nxt, an attacker would check what potential blocks they could create in the next 10-block window (10 confirmations is considered "permanent" according to the white paper) and if the attacker predicts a high likelihood they can create a 10 block chain before the honest network can, the attacker can spend on the honest chain, then revert that chain with a hidden chain attack. With just this, an attacker with 9.8% of the active stake gets an opportunity to double-spend more often than once per year on average. Even if 60 confirmations are used (to match bitcoin's average of 6-block/1-hour finalization time), an attacker with 30.1% of the active stake has one opportunity per year to attack. See [costOfAttackingAlts.js](costOfAttackingAlts.js) for the calculations. Factoring in the rich-get-richer effect and that 30.1% probability of minting a block only requires about 23% of the active stake. All in all, Nxt has some of the best security of any of the PoS systems out there, tho VPoS beats it by anywhere from 2- to 10-fold.
+In a minimal cost attack on Nxt, an attacker would check what potential blocks they could create in the next 10-block window (10 confirmations is considered "permanent" according to the white paper) and if the attacker predicts a high likelihood they can create a 10 block chain before the honest network can, the attacker can spend on the honest chain, then revert that chain with a hidden chain attack. With just this, an attacker with 9.8% of the active stake gets an opportunity to double-spend more often than once per year on average. Even if 60 confirmations are used (to match bitcoin's average of 6-block/1-hour finalization time), an attacker with 30.1% of the active stake has one opportunity per year to attack. See [costOfAttackingAlts.js](costOfAttackingAlts.js) for the calculations. Factoring in the rich-get-richer effect and that 30.1% probability of minting a block only requires about 23% of the active stake. All in all, Nxt has some of the best base security of any of the PoS systems out there, tho VPoS beats it by anywhere from 2- to 10-fold.
 
 Nxt does, however, have an interesting proposed solution for long-range revisions, requiring a hash of a recent block in each transaction so that long range revisions wouldn't be able to include real transactions. However, this increases the size of transactions and doesn't prevent an attacker from using their own transactions inside their alternate chain. While more expensive, it could probably offer partial mitigation of shorter medium-range revisions than hardcoded checkpointing can prevent (since there is a limit to how often users can feasibly and safely update their software).
 

@@ -1,1 +1,3 @@
 https://www.coindesk.com/bitcoins-security-model-deep-dive
+
+Goldfinger attack: https://soundcrypto.com/blog/2017/11/16/crypto-options-and-goldfinger-attacks
